@@ -526,9 +526,9 @@ function draw2() {
   // The curves run toward larger a/c (downward on the page), so the negative dy puts each
   // label on the far side of its curve. Chen and He's label is centred on the stretch with
   // gamma <= 1.5 (the lower, flatter end of the path); ours begins at a/c = 2, as in the paper.
-  label(ord, "sufficient condition of Chen and He", c => {
+  label(ord, "ordering condition", c => {
     const k = Math.max(0, c.pts.findIndex(p => p[1] <= 1.5));
-    return (c.s[k] + c.s[c.s.length - 1]) / 2 - labW("sufficient condition of Chen and He") / 2; });
+    return (c.s[k] + c.s[c.s.length - 1]) / 2 - labW("ordering condition") / 2; });
   label(nsc, "necessary and sufficient condition", c => {
     const k = c.pts.findIndex(p => p[0] >= 2); return k < 0 ? 0 : c.s[k]; });
   sc.border();
