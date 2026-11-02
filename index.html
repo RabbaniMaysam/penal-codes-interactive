@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Truncated Demand Regime Map</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+/* Layout: one narrow reading column on a white page; each tool is a control strip above a
+   full-width SVG figure styled like Figure 2 of the paper (ggplot2 theme_bw: white panel,
+   grey92 gridlines, grey20 border, grey30 axis text, Arial; fills white, grey85, grey45).
+   Single light theme by choice (Maysam, November 2, 2026): the page is white. */
+:root {
+  --bg: #ffffff; --fg: #000000; --muted: #4d4d4d; --rule: #cccccc; --panel: #f2f2f2;
+  --accent: #27508a; --fill-c: #ffffff; --fill-t2: #d9d9d9; --fill-t3: #737373; --line: #000000;
+  --grid: #ebebeb; --border: #333333; --axis-text: #4d4d4d;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --sans: Arial, Helvetica, "Source Sans 3", sans-serif;
+  color-scheme: light;
+}
+body { background: var(--bg); color: var(--fg); font-family: var(--serif); font-size: 16px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 48px; }
+main { max-width: 760px; margin: 0 auto; }
+h1 { font-size: 1.7rem; font-weight: 600; line-height: 1.2; margin: 0 0 .4rem; text-wrap: balance; }
+h2 { font-size: 1.2rem; font-weight: 600; margin: 2.2rem 0 .3rem; text-wrap: balance; }
+p { margin: 0 0 .8rem; max-width: 66ch; }
+.lede { color: var(--muted); }
+.controls { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: end; font-family: var(--sans); font-size: 14px;
+  padding: 10px 14px; background: var(--panel); border-radius: 6px; margin: .6rem 0 .8rem; }
+.controls label { display: flex; flex-direction: column; gap: 2px; min-width: 150px; }
+.controls label span b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.controls input[type=range] { width: 100%; accent-color: var(--accent); }
+.controls button { font: 600 14px var(--sans); color: var(--fg); background: var(--bg); border: 1px solid var(--border);
+  border-radius: 4px; padding: 5px 12px; cursor: pointer; margin-left: auto; }
+.controls button:hover { background: var(--panel); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+figure { margin: 0; }
+figure.pair { display: flex; flex-wrap: wrap; gap: 8px; }
+figure.pair svg { flex: 1 1 300px; min-width: 0; }
+svg { width: 100%; height: auto; display: block; font-family: var(--sans); }
+.readout { font-family: var(--sans); font-size: 14px; color: var(--muted); min-height: 1.4em; font-variant-numeric: tabular-nums; margin: .3rem 0 .6rem; }
+.readout b { color: var(--fg); font-weight: 600; }
+table.nums { font-family: var(--sans); font-size: 14px; border-collapse: collapse; margin: .2rem 0 1rem; font-variant-numeric: tabular-nums; }
+table.nums td { padding: 2px 14px 2px 0; border-bottom: 1px solid var(--rule); }
+table.nums td:last-child { text-align: right; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 20px; font-family: var(--sans); font-size: 13px; margin: .2rem 0 .6rem; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend svg { width: 26px; height: 14px; display: inline; }
+.foot { font-size: .9rem; color: var(--muted); border-top: 1px solid var(--rule); padding-top: .8rem; margin-top: 2.4rem; }
+input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Truncated Demand Regime Map</h1>
+<p class="lede">Interactive companion to Figures 1 and 2 of “Patience and the Harshest Punishment in Repeated Cournot Oligopoly”. </p>
+
+<h2>The jump along the discount factor</h2>
+<p>Demand <i>p</i>(<i>Q</i>) = max{<i>a</i> − <i>Q</i> − <i>kQ</i><sup>2</sup>, 0}; Example 1 is <i>N</i> = 5, <i>a</i> = 15, <i>c</i> = 3, <i>k</i> = 1/4. The window around the kink is chosen automatically.</p>
+<div class="controls">
+  <label><span>Number of firms <i>N</i> = <b id="n0v">5</b></span><input type="range" id="n0" min="2" max="8" step="1" value="5"></label>
+  <label><span>Demand intercept <i>a</i> = <b id="a0v">15</b></span><input type="range" id="a0" min="4" max="30" step="0.5" value="15"></label>
+  <label><span>Marginal cost <i>c</i> = <b id="c0v">3</b></span><input type="range" id="c0" min="0.5" max="10" step="0.5" value="3"></label>
+  <label><span>Curvature <i>k</i> = <b id="k0v">0.25</b></span><input type="range" id="k0" min="0" max="1" step="0.05" value="0.25"></label>
+  <button type="button" id="reset0">Reset to Figure 1</button>
+</div>
+<figure class="pair"><svg id="fig0a" viewBox="0 0 380 300" role="img" aria-label="Required discount factor against the deterrence level"></svg><svg id="fig0b" viewBox="0 0 380 300" role="img" aria-label="Worst punishment payoff against the discount factor"></svg></figure>
+<div class="legend">
+  <span><svg viewBox="0 0 26 14"><line x1="1" y1="7" x2="25" y2="7" stroke="var(--line)" stroke-width="1.6"/></svg>selected deterrence levels</span>
+  <span><svg viewBox="0 0 26 14"><circle cx="13" cy="7" r="4" fill="var(--fill-c)" stroke="var(--line)" stroke-width="1.2"/></svg>pre-jump root</span>
+</div>
+<div class="readout" id="read0"></div>
+
+<h2>Truncated linear demand</h2>
+<p>Demand <i>p</i>(<i>Q</i>) = max{<i>a</i> − <i>bQ</i>, 0}. Only <i>a</i>/<i>c</i> and <i>N</i> matter. The curve is the jump in the worst punishment payoff in units of <i>c</i><sup>2</sup>/<i>b</i>.</p>
+<div class="controls">
+  <label><span>Number of firms <i>N</i> = <b id="n1v">2</b></span><input type="range" id="n1" min="2" max="8" step="1" value="2"></label>
+  <label><span>Largest <i>a</i>/<i>c</i> shown = <b id="amax1v">9</b></span><input type="range" id="amax1" min="4" max="15" step="1" value="9"></label>
+  <button type="button" id="reset1">Reset to panel (a)</button>
+</div>
+<figure><svg id="fig1" viewBox="0 0 760 360" role="img" aria-label="Jump in the worst punishment payoff against a over c"></svg></figure>
+<div class="legend">
+  <span><svg viewBox="0 0 26 14"><line x1="1" y1="7" x2="25" y2="7" stroke="var(--line)" stroke-width="1.6"/></svg>continuous</span>
+  <span><svg viewBox="0 0 26 14"><line x1="1" y1="7" x2="25" y2="7" stroke="var(--line)" stroke-width="1.6" stroke-dasharray="3.2 3.2"/></svg>one jump</span>
+  <span><svg viewBox="0 0 26 14"><circle cx="13" cy="7" r="4" fill="var(--fill-c)" stroke="var(--line)" stroke-width="1.2"/></svg>sufficient condition of Chen and He</span>
+  <span><svg viewBox="0 0 26 14"><circle cx="13" cy="7" r="4" fill="var(--line)"/></svg>necessary and sufficient condition</span>
+</div>
+<div class="readout" id="read1">Move the pointer over the figure to read the jump at any <i>a</i>/<i>c</i>.</div>
+<table class="nums" id="tab1"></table>
+
+<h2>Constant-curvature demand</h2>
+<p>Demand <i>p</i>(<i>Q</i>) = max{<i>a</i> − <i>bQ</i><sup>γ</sup>, 0}; only <i>a</i>/<i>c</i> and <i>N</i> matter, and γ = 1 is the linear family above.</p>
+<div class="controls">
+  <label><span>Number of firms <i>N</i> = <b id="n2v">2</b></span><input type="range" id="n2" min="2" max="8" step="1" value="2"></label>
+  <label><span>Largest <i>a</i>/<i>c</i> shown = <b id="amax2v">10</b></span><input type="range" id="amax2" min="4" max="15" step="1" value="10"></label>
+  <label><span>Largest curvature γ = <b id="gmax2v">3</b></span><input type="range" id="gmax2" min="1.5" max="5" step="0.5" value="3"></label>
+  <button type="button" id="reset2">Reset to panel (c)</button>
+</div>
+<figure><svg id="fig2" viewBox="0 0 760 420" role="img" aria-label="Regions of the a over c and gamma plane"></svg></figure>
+<div class="legend">
+  <span><svg viewBox="0 0 26 14"><rect x="1" y="1" width="24" height="12" fill="var(--fill-c)" stroke="var(--line)" stroke-width="1"/></svg>continuous</span>
+  <span><svg viewBox="0 0 26 14"><rect x="1" y="1" width="24" height="12" fill="var(--fill-t2)" stroke="var(--line)" stroke-width="1"/></svg>one jump, Theorem 2</span>
+  <span><svg viewBox="0 0 26 14"><rect x="1" y="1" width="24" height="12" fill="var(--fill-t3)" stroke="var(--line)" stroke-width="1"/></svg>one jump, Theorem 3</span>
+</div>
+<div class="readout" id="read2">Move the pointer over the map to read the regime and the primitives at any (<i>a</i>/<i>c</i>, γ).</div>
+
+<p class="foot">Computed in the browser on the grids of the paper's R scripts. Maysam Rabbani, Montclair State University.</p>
+</main>
+
+<script id="engine">
+// ---- Selection engine, a port of code/ba4_misc_selection_engine.R --------------
+const ENGINE = (() => {
+  // root of f on [lo, hi] with f(lo) and f(hi) of opposite signs
+  function bisect(f, lo, hi, iters) {
+    let flo = f(lo);
+    for (let i = 0; i < iters; i++) {
+      const m = 0.5 * (lo + hi), fm = f(m);
+      if ((fm < 0) === (flo < 0)) { lo = m; flo = fm; } else hi = m;
+    }
+    return 0.5 * (lo + hi);
+  }
+  // Common parts of a game: q0, qT, M, pi_s, Delta, and the kink and jump statistics
+  function finish(G) {
+    G.q0 = G.Qc / (G.N - 1); G.qT = G.Qbar / G.N; G.M = 1.5 * Math.max(G.q0, G.qT);
+    G.pi_s = q => q * (G.p(G.N * q) - G.c);
+    G.Delta = q => G.piD(q) - G.pi_s(q);
+    return G;
+  }
+  // Truncated linear demand p = max(a - Q, 0), closed forms
+  function linearGame(a, N, c = 1) {
+    const G = { N, c, Qbar: a, Qc: a - c, p: Q => Math.max(a - Q, 0) };
+    G.piD = q => { const z = (N - 1) * q; return z < a - c ? (a - c - z) * (a - c - z) / 4 : 0; };
+    G.dpiD = q => { const z = (N - 1) * q; return z < a - c ? -(N - 1) * (a - c - z) / 2 : 0; }; // left derivative
+    G.qN = (a - c) / (N + 1);
+    G.qm = Math.min((a - c) / (2 * N), G.qT = a / N);
+    return finish(G);
+  }
+  // Constant-curvature family p = max(a - Q^g, 0). The deviator's marginal profit
+  // a - c - (y+z)^g - g y (y+z)^(g-1) is strictly decreasing in y, so the best
+  // response is the unique root of the first-order condition (safeguarded Newton).
+  function curvGame(a, g, N, c = 1) {
+    const Qc = Math.pow(a - c, 1 / g);
+    const G = { N, c, Qbar: Math.pow(a, 1 / g), Qc, p: Q => Math.max(a - Math.pow(Q, g), 0) };
+    G.yBR = q => {
+      const z = (N - 1) * q;
+      if (z >= Qc) return 0;
+      let lo = 0, hi = Qc - z, y = 0.5 * hi;
+      for (let i = 0; i < 60; i++) {
+        const s = y + z, sg1 = Math.pow(s, g - 1);
+        const F = a - c - s * sg1 - g * y * sg1;
+        if (F > 0) lo = y; else hi = y;
+        const dF = -g * sg1 / s * ((g + 1) * y + 2 * z);
+        let yn = y - F / dF;
+        if (!(yn > lo && yn < hi)) yn = 0.5 * (lo + hi);
+        if (Math.abs(yn - y) < 1e-14 * (1 + y)) { y = yn; break; }
+        y = yn;
+      }
+      return y;
+    };
+    G.piD = q => { const y = G.yBR(q); return y * (a - c - Math.pow(y + (N - 1) * q, g)); };
+    // envelope theorem: d piD / dq = (N-1) y* p'(y* + z)
+    G.dpiD = q => { const y = G.yBR(q); if (y <= 0) return 0; return -(N - 1) * y * g * Math.pow(y + (N - 1) * q, g - 1); };
+    G.qN = Math.pow((a - c) / (1 + g / N), 1 / g) / N;
+    G.qT = G.Qbar / N;
+    G.qm = Math.min(Math.pow((a - c) / (1 + g), 1 / g) / N, G.qT);
+    return finish(G);
+  }
+  // Primitives of the classification at the kink (Corollary 1, Theorems 2 and 3)
+  function kinkStats(G) {
+    const { q0, qT, qN, qm, c } = G;
+    const active = q0 > qT;
+    if (!active) return { active, d: NaN, eps: NaN, regime: 0 };
+    const d = -G.dpiD(qT);
+    const betaT = G.Delta(qT);
+    const q_lo = G.Delta(0) <= betaT ? 0 : bisect(q => G.Delta(q) - betaT, 0, qN, 60);
+    const carrot = Math.max(qm, q_lo);
+    const ET = betaT + G.pi_s(carrot) - G.piD(qT);
+    let carrot_term = 0;
+    if (q_lo > qm) {
+      const h = 1e-6;
+      carrot_term = (G.pi_s(q_lo + h) - G.pi_s(q_lo - h)) / (G.Delta(q_lo + h) - G.Delta(q_lo - h));
+    }
+    const Eprime = d < c ? c / (c - d) + carrot_term : Infinity;
+    const eps = betaT * Eprime / ET;
+    const regime = d >= c ? 3 : (eps <= 1 ? 1 : 2);   // 0 Cor 1, 1 Thm 2 continuous, 2 Thm 2 jump, 3 Thm 3
+    return { active, d, eps, regime, betaT, ET, carrot_term };
+  }
+  // count of elements of a nondecreasing array that are <= b
+  function countLE(arr, b) {
+    let lo = 0, hi = arr.length;
+    while (lo < hi) { const m = (lo + hi) >> 1; if (arr[m] <= b) lo = m + 1; else hi = m; }
+    return lo;
+  }
+  // Selected deterrence levels (those with no larger level of weakly lower psi) and the
+  // maximal skipped run on a grid of levels; beyondMin is the smallest psi at levels
+  // above the grid (Infinity when the grid reaches the top).
+  function selectRuns(psi, beyondMin) {
+    const nb = psi.length, skipped = new Uint8Array(nb);
+    let mr = beyondMin;
+    for (let t = nb - 1; t >= 0; t--) { skipped[t] = psi[t] >= mr - 1e-12 ? 1 : 0; mr = Math.min(mr, psi[t]); }
+    let best = 0, bs = -1, s = -1;
+    for (let t = 0; t <= nb; t++) {
+      if (t < nb && skipped[t]) { if (s < 0) s = t; }
+      else if (s >= 0) { if (t - s > best) { best = t - s; bs = s; } s = -1; }
+    }
+    return { skipped, im: best ? bs : -1, iJ: best ? Math.min(bs + best, nb - 1) : -1 };
+  }
+  // The whole required-discount-factor curve from the definitions: psi(beta) =
+  // beta / [beta + f(beta) - g(beta)] on a grid of deterrence levels, with the stick
+  // (largest output with Delta <= beta, which handles the fold when d > c), the carrot,
+  // and the selected levels. evalBeta gives the same quantities at any level.
+  function psiTable(G, nq = 20000, nb = 4000, nl = 4000) {
+    const { qN, qm, M } = G;
+    const qg = new Float64Array(nq), Dg = new Float64Array(nq), Pg = new Float64Array(nq);
+    for (let i = 0; i < nq; i++) { qg[i] = qN + (M - qN) * i / (nq - 1); Dg[i] = G.Delta(qg[i]); Pg[i] = G.piD(qg[i]); }
+    const ql = new Float64Array(nl), Dl = new Float64Array(nl);
+    for (let i = 0; i < nl; i++) { ql[i] = qN * i / (nl - 1); Dl[i] = G.Delta(ql[i]); }
+    const DlAsc = Float64Array.from(Dl).reverse();                 // Dl is decreasing
+    const mfr = new Float64Array(nq);                              // running min from the right
+    mfr[nq - 1] = Dg[nq - 1];
+    for (let i = nq - 2; i >= 0; i--) mfr[i] = Math.min(Dg[i], mfr[i + 1]);
+    const bmax = Dg[nq - 1];
+    const evalBeta = b => {
+      let k = countLE(mfr, b) - 1; if (k < 0) k = 0;
+      const k2 = Math.min(k + 1, nq - 1);
+      let w = k2 > k ? (b - Dg[k]) / (Dg[k2] - Dg[k]) : 0;
+      w = Math.min(Math.max(w, 0), 1);
+      const stick = qg[k] + w * (qg[k2] - qg[k]), g = Pg[k] + w * (Pg[k2] - Pg[k]);
+      const m = countLE(DlAsc, b);
+      let qlo;
+      if (m === 0) qlo = qN;
+      else { const j = nl - m; qlo = j === 0 ? 0 : ql[j - 1] + (b - Dl[j - 1]) / (Dl[j] - Dl[j - 1]) * (ql[j] - ql[j - 1]); }
+      const f = G.pi_s(Math.max(qm, qlo));
+      return { stick, g, f, psi: b / (b + f - g) };
+    };
+    const bg = new Float64Array(nb), stick = new Float64Array(nb), gval = new Float64Array(nb), psi = new Float64Array(nb);
+    for (let t = 0; t < nb; t++) {
+      bg[t] = bmax * 1e-4 + (bmax * 0.999 - bmax * 1e-4) * t / (nb - 1);
+      const e = evalBeta(bg[t]); stick[t] = e.stick; gval[t] = e.g; psi[t] = e.psi;
+    }
+    const sel = selectRuns(psi, Infinity);
+    return { bg, stick, gval, psi, skipped: sel.skipped, im: sel.im, iJ: sel.iJ, bmax, evalBeta };
+  }
+  // The jump from the definitions (the statistics quoted in the paper)
+  function jumpStats(G, nq = 20000, nb = 4000, nl = 4000) {
+    const T = psiTable(G, nq, nb, nl), { im, iJ, stick, gval, psi } = T;
+    if (im < 0) return { jump: false, dq: 0, dg: 0, deltaJ: NaN };
+    return { jump: true, dq: stick[iJ] - stick[im], dg: gval[im] - gval[iJ], deltaJ: psi[iJ],
+             q_minus: stick[im], q_J: stick[iJ], g_minus: gval[im], g_J: gval[iJ] };
+  }
+  // Fine view of the curve around the price kink (Figure 1 of the paper): the window
+  // encloses the skipped interval and the kink; selection on the fine grid also uses
+  // the smallest psi beyond the window from the coarse table.
+  function kinkWindow(G, T, nf = 1500) {
+    // The level at which the stick passes the price kink: beta_T = Delta(q^T) when d < c;
+    // when d >= c the deviation gain falls after the kink, the stick jumps over q^T at
+    // beta_2 = min Delta beyond q^T, and the curve breaks there (Theorem 3).
+    let betaT = G.Delta(G.qT);
+    if (G.q0 > G.qT && -G.dpiD(G.qT) >= G.c) {
+      for (let i = 0; i <= 2000; i++) betaT = Math.min(betaT, G.Delta(G.qT + (G.M - G.qT) * i / 2000));
+    }
+    let lo, hi;
+    if (T.im >= 0) {
+      const bm = T.bg[T.im], bJ = T.bg[T.iJ], L = Math.max(bJ - bm, 0.02 * betaT);
+      lo = Math.min(bm, betaT) - 1.5 * L; hi = Math.max(bJ, betaT) + 2.5 * L;
+    } else { lo = 0.93 * betaT; hi = 1.08 * betaT; }
+    lo = Math.max(lo, T.bg[0]); hi = Math.min(hi, T.bg[T.bg.length - 1]);
+    let beyond = Infinity;
+    for (let t = 0; t < T.bg.length; t++) if (T.bg[t] > hi) beyond = Math.min(beyond, T.psi[t]);
+    const bg = new Float64Array(nf), stick = new Float64Array(nf), gval = new Float64Array(nf), psi = new Float64Array(nf);
+    for (let t = 0; t < nf; t++) { bg[t] = lo + (hi - lo) * t / (nf - 1); const e = T.evalBeta(bg[t]); stick[t] = e.stick; gval[t] = e.g; psi[t] = e.psi; }
+    const sel = selectRuns(psi, beyond);
+    // Left limit at the break: the stick on the pre-kink branch (q^T itself when d < c;
+    // the output below q^T with Delta = beta_2 when d >= c).
+    const qK = betaT < G.Delta(G.qT) - 1e-12 ? bisect(q => G.Delta(q) - betaT, G.qN, G.qT, 100) : G.qT;
+    const gT = G.piD(qK), fT = T.evalBeta(betaT).f;
+    const out = { lo, hi, bg, stick, gval, psi, skipped: sel.skipped, betaT, psiT: betaT / (betaT + fT - gT), gT, qK, jump: sel.im >= 0 };
+    if (out.jump) Object.assign(out, { betaM: bg[sel.im], betaJ: bg[sel.iJ], deltaJ: psi[sel.iJ],
+                                      gM: gval[sel.im], gJ: gval[sel.iJ], qM: stick[sel.im], qJ: stick[sel.iJ] });
+    return out;
+  }
+  // Demand p = max(a - Q - k Q^2, 0) (Example 1 of the paper: N = 5, a = 15, c = 3,
+  // k = 1/4). The deviator's marginal profit is strictly decreasing in own output,
+  // so the best response is the unique root of the first-order condition.
+  function quadGame(a, k, N, c) {
+    const rootQ = v => k > 0 ? (-1 + Math.sqrt(1 + 4 * k * v)) / (2 * k) : v;   // Q + kQ^2 = v
+    const Qc = rootQ(a - c);
+    const G = { N, c, Qbar: rootQ(a), Qc, p: Q => Math.max(a - Q - k * Q * Q, 0) };
+    G.yBR = q => {
+      const z = (N - 1) * q;
+      if (z >= Qc) return 0;
+      return bisect(y => { const s = y + z; return a - c - s - k * s * s - y * (1 + 2 * k * s); }, 0, Qc - z, 60);
+    };
+    G.piD = q => { const y = G.yBR(q), s = y + (N - 1) * q; return y * (a - c - s - k * s * s); };
+    G.dpiD = q => { const y = G.yBR(q); if (y <= 0) return 0; const s = y + (N - 1) * q; return -(N - 1) * y * (1 + 2 * k * s); };
+    G.qN = bisect(q => a - c - N * q - k * N * N * q * q - q * (1 + 2 * k * N * q), 0, Qc / N, 60);
+    G.qT = G.Qbar / N;
+    const qmU = k > 0 ? (-2 * N + Math.sqrt(4 * N * N + 12 * k * N * N * (a - c))) / (6 * k * N * N) : (a - c) / (2 * N);
+    G.qm = Math.min(qmU, G.qT);
+    return finish(G);
+  }
+  // Linear family: elasticity threshold of Theorem 2 by bisection on (N, N(N+1)/(N-1))
+  function linearThreshold(N) {
+    const dc = N * (N + 1) / (N - 1);
+    return bisect(a => kinkStats(linearGame(a, N)).eps - 1, N + 1e-4, dc - 1e-4, 50);
+  }
+  // Curvature family: region boundaries along a row of gamma
+  function curvBoundaries(g, N, aHi) {
+    const b_ord = 1 / (1 - Math.pow((N - 1) / N, g));
+    const ks = a => kinkStats(curvGame(a, g, N));
+    const lo = b_ord + 1e-4;
+    let b_dc = NaN, b_eps = NaN;
+    if (lo < aHi) {
+      const top = ks(aHi);
+      if (isFinite(top.d) && top.d >= 1) b_dc = bisect(a => ks(a).d - 1, lo, aHi, 45);
+      const hi = isNaN(b_dc) ? aHi : b_dc - 1e-4;
+      if (ks(hi).eps > 1) b_eps = bisect(a => ks(a).eps - 1, lo, hi, 45);
+    }
+    return { gam: g, b_ord, b_eps, b_dc };
+  }
+  return { linearGame, curvGame, quadGame, kinkStats, jumpStats, psiTable, kinkWindow, linearThreshold, curvBoundaries };
+})();
+if (typeof module !== "undefined") module.exports = ENGINE;
+</script>
+
+<script>
+// ---- Drawing ----------------------------------------------------------------------
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function ticks(lo, hi, n) {
+  const span = hi - lo, raw = span / n, p = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * p).find(s => span / s <= n) || 10 * p;
+  const out = [];
+  for (let v = Math.ceil(lo / step - 1e-9) * step; v <= hi + 1e-9; v += step) out.push(+v.toFixed(10));
+  return out;
+}
+const fmt = (v, d = 3) => isFinite(v) ? v.toFixed(d) : "–";
+// panel in the style of ggplot2 theme_bw (as Figure 2 of the paper): white panel, major
+// gridlines in grey92, border in grey20, axis text in grey30, a title strip above with no
+// background; returns the scales. The panel background is drawn here; the border last.
+function frame(svg, W, H, m, xlim, ylim, xlab, ylab, title) {
+  svg.innerHTML = "";
+  const x = v => m.l + (v - xlim[0]) / (xlim[1] - xlim[0]) * (W - m.l - m.r);
+  const y = v => H - m.b - (v - ylim[0]) / (ylim[1] - ylim[0]) * (H - m.t - m.b);
+  el("rect", { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, fill: "var(--fill-c)" }, svg);
+  const g = el("g", { "font-size": "13", fill: "var(--axis-text)" }, svg);
+  const xt = ticks(xlim[0], xlim[1], 8), yt = ticks(ylim[0], ylim[1], 6);
+  for (const v of xt) el("line", { x1: x(v), x2: x(v), y1: m.t, y2: H - m.b, stroke: "var(--grid)", "stroke-width": "1" }, g);
+  for (const v of yt) el("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: "var(--grid)", "stroke-width": "1" }, g);
+  for (const v of xt) {
+    el("line", { x1: x(v), x2: x(v), y1: H - m.b, y2: H - m.b + 4, stroke: "var(--border)" }, g);
+    const t = el("text", { x: x(v), y: H - m.b + 17, "text-anchor": "middle" }, g); t.textContent = v;
+  }
+  for (const v of yt) {
+    el("line", { x1: m.l - 4, x2: m.l, y1: y(v), y2: y(v), stroke: "var(--border)" }, g);
+    const t = el("text", { x: m.l - 7, y: y(v) + 4, "text-anchor": "end" }, g); t.textContent = v;
+  }
+  const tx = el("text", { x: (m.l + W - m.r) / 2, y: H - 6, "text-anchor": "middle", "font-size": "14", fill: "var(--fg)" }, g); tx.textContent = xlab;
+  const ty = el("text", { x: 14, y: (m.t + H - m.b) / 2, "text-anchor": "middle", "font-size": "14", fill: "var(--fg)",
+                          transform: `rotate(-90 14 ${(m.t + H - m.b) / 2})` }, g); ty.textContent = ylab;
+  const tt = el("text", { x: (m.l + W - m.r) / 2, y: m.t - 7, "text-anchor": "middle", "font-size": "14", fill: "var(--fg)" }, g); tt.textContent = title;
+  return { x, y, border: () => el("rect", { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, fill: "none", stroke: "var(--border)", "stroke-width": "1" }, svg) };
+}
+
+// ---- Tool 0: the jump along the discount factor (Figure 1) --------------------------
+const f0a = document.getElementById("fig0a"), f0b = document.getElementById("fig0b"), r0 = document.getElementById("read0");
+function draw0() {
+  const N = +document.getElementById("n0").value, a = +document.getElementById("a0").value,
+        c = +document.getElementById("c0").value, k = +document.getElementById("k0").value;
+  document.getElementById("n0v").textContent = N; document.getElementById("a0v").textContent = a;
+  document.getElementById("c0v").textContent = c; document.getElementById("k0v").textContent = k.toFixed(2);
+  const W = 380, H = 300, m = { l: 58, t: 14, r: 12, b: 42 };
+  if (a <= c) {
+    frame(f0a, W, H, m, [0, 1], [0, 1], "Deterrence level β", "(a) Required discount factor ψ(β)", "");
+    frame(f0b, W, H, m, [0, 1], [0, 1], "Discount factor δ", "(b) Worst punishment payoff", "");
+    r0.innerHTML = "<b>No market:</b> the demand intercept must exceed the marginal cost.";
+    return;
+  }
+  const G = ENGINE.quadGame(a, k, N, c), ks = ENGINE.kinkStats(G), T = ENGINE.psiTable(G), V = ENGINE.kinkWindow(G, T);
+  const n = V.bg.length;
+  // panel (a)
+  let pLo = Infinity, pHi = -Infinity, gHi = 0;
+  for (let t = 0; t < n; t++) { pLo = Math.min(pLo, V.psi[t]); pHi = Math.max(pHi, V.psi[t]); gHi = Math.max(gHi, V.gval[t]); }
+  const pad = Math.max((pHi - pLo) * 0.12, 1e-4); pLo -= pad; pHi += pad;
+  const sa = frame(f0a, W, H, m, [V.lo, V.hi], [pLo, pHi], "Deterrence level β", "(a) Required discount factor ψ(β)", "");
+  if (V.jump) el("rect", { x: sa.x(V.betaM), y: m.t, width: sa.x(V.betaJ) - sa.x(V.betaM), height: H - m.t - m.b, fill: "#e0e0e0" }, f0a);
+  if (V.jump) el("line", { x1: m.l, x2: W - m.r, y1: sa.y(V.deltaJ), y2: sa.y(V.deltaJ), stroke: "#737373", "stroke-width": "1" }, f0a);
+  // segments of constant status, drawn solid or dashed
+  const runs = (xs, ys, skipped, svg) => {
+    let s = 0;
+    for (let t = 1; t <= n; t++) {
+      if (t === n || skipped[t] !== skipped[s]) {
+        const end = Math.min(t, n - 1);
+        let d = "";
+        for (let u = s; u <= end; u++) d += (u === s ? "M" : "L") + xs(u).toFixed(2) + " " + ys(u).toFixed(2);
+        el("path", { d, fill: "none", stroke: "var(--line)", "stroke-width": "1.6", "stroke-dasharray": skipped[s] ? "4 3" : "none" }, svg);
+        s = t;
+      }
+    }
+  };
+  runs(t => sa.x(V.bg[t]), t => sa.y(V.psi[t]), V.skipped, f0a);
+  const tri = (svg, x, y) => el("path", { d: `M${x} ${y - 5.5} L${x + 5} ${y + 3.5} L${x - 5} ${y + 3.5} Z`, fill: "var(--fill-c)", stroke: "var(--line)", "stroke-width": "1.2" }, svg);
+  const txt = (svg, x, y, s, anchor) => { const t = el("text", { x, y, "font-size": "13", fill: "var(--fg)", "text-anchor": anchor || "middle" }, svg); t.textContent = s; return t; };
+  if (V.betaT >= V.lo && V.betaT <= V.hi) { tri(f0a, sa.x(V.betaT), sa.y(V.psiT)); txt(f0a, sa.x(V.betaT), sa.y(V.psiT) - 10, "kink"); }
+  if (V.jump) {
+    el("circle", { cx: sa.x(V.betaJ), cy: sa.y(V.deltaJ), r: 4.5, fill: "var(--line)" }, f0a);
+    el("circle", { cx: sa.x(V.betaM), cy: sa.y(V.deltaJ), r: 4.5, fill: "var(--fill-c)", stroke: "var(--line)", "stroke-width": "1.2" }, f0a);
+    txt(f0a, sa.x(V.betaJ) + 8, sa.y(V.deltaJ) + 16, "selected minimum", "start");
+    txt(f0a, (sa.x(V.betaM) + sa.x(V.betaJ)) / 2, H - m.b - 6, "skipped");
+    txt(f0a, m.l + 5, sa.y(V.deltaJ) - 5, "δJ", "start");
+  }
+  sa.border();
+  // panel (b): the worst punishment payoff against psi at every level in the window
+  const sb = frame(f0b, W, H, m, [pLo, pHi], [0, gHi * 1.04], "Discount factor δ", "(b) Worst punishment payoff", "");
+  runs(t => sb.x(V.psi[t]), t => sb.y(V.gval[t]), V.skipped, f0b);
+  if (V.jump) {
+    el("defs", {}, f0b).innerHTML = '<marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#595959"/></marker>';
+    el("line", { x1: sb.x(V.deltaJ), x2: sb.x(V.deltaJ), y1: sb.y(V.gM) - 6, y2: sb.y(V.gJ) + 6, stroke: "#595959", "stroke-width": "1", "marker-end": "url(#arr)" }, f0b);
+    el("circle", { cx: sb.x(V.deltaJ), cy: sb.y(V.gJ), r: 4.5, fill: "var(--line)" }, f0b);
+    el("circle", { cx: sb.x(V.deltaJ), cy: sb.y(V.gM), r: 4.5, fill: "var(--fill-c)", stroke: "var(--line)", "stroke-width": "1.2" }, f0b);
+    txt(f0b, sb.x(V.deltaJ) - 7, (sb.y(V.gM) + sb.y(V.gJ)) / 2 + 4, "jump", "end");
+  }
+  if (V.betaT >= V.lo && V.betaT <= V.hi) { tri(f0b, sb.x(V.psiT), sb.y(V.gT)); txt(f0b, sb.x(V.psiT) + 9, sb.y(V.gT) + 4, "kink", "start"); }
+  sb.border();
+  const reg = ["continuous (Corollary 1)", "continuous (Theorem 2)", "one jump (Theorem 2)", "one jump (Theorem 3)"][ks.regime];
+  r0.innerHTML = `<b>Regime:</b> ${reg}` + (ks.active ? `; d/c = ${fmt(ks.d / c, 3)}; right elasticity at the kink = ${fmt(ks.eps, 2)}` : "") +
+    (V.jump ? `. <b>Jump:</b> δ<sub>J</sub> = ${fmt(V.deltaJ, 5)}, β<sub>−</sub> = ${fmt(V.betaM, 4)}, β<sub>J</sub> = ${fmt(V.betaJ, 4)}; stick ${fmt(V.qM, 4)} → ${fmt(V.qJ, 4)}; worst punishment payoff ${fmt(V.gM, 4)} → ${fmt(V.gJ, 4)}.`
+            : ". No deterrence level is skipped in the window.");
+}
+
+// ---- Tool 1: linear family ----------------------------------------------------------
+const f1 = document.getElementById("fig1"), r1 = document.getElementById("read1"), t1 = document.getElementById("tab1");
+let S1 = null;
+function draw1() {
+  const N = +document.getElementById("n1").value, aMax = +document.getElementById("amax1").value;
+  document.getElementById("n1v").textContent = N; document.getElementById("amax1v").textContent = aMax;
+  const thr = ENGINE.linearThreshold(N), dc = N * (N + 1) / (N - 1);
+  const as = [], dgs = [];
+  for (let a = 1.05; a <= aMax + 1e-9; a += 0.05) { as.push(+a.toFixed(2)); dgs.push(ENGINE.jumpStats(ENGINE.linearGame(a, N)).dg); }
+  const W = 760, H = 360, m = { l: 62, t: 28, r: 16, b: 46 };
+  const yMax = Math.max(0.05, ...dgs) * 1.06;
+  const sc = frame(f1, W, H, m, [0.8, aMax], [0, yMax], "a/c", "Jump in worst punishment payoff", "N = " + N);
+  const pathOf = pts => pts.map((p, i) => (i ? "L" : "M") + sc.x(p[0]).toFixed(2) + " " + sc.y(p[1]).toFixed(2)).join("");
+  const solid = [], dashed = [[thr, 0]];
+  as.forEach((a, i) => (a <= thr ? solid : dashed).push([a, dgs[i]]));
+  solid.push([thr, 0]);
+  el("path", { d: pathOf(solid), fill: "none", stroke: "var(--line)", "stroke-width": "1.6" }, f1);
+  if (dashed.length > 1) el("path", { d: pathOf(dashed), fill: "none", stroke: "var(--line)", "stroke-width": "1.6", "stroke-dasharray": "3.2 3.2" }, f1);
+  if (N <= aMax) el("circle", { cx: sc.x(N), cy: sc.y(0), r: 4, fill: "var(--fill-c)", stroke: "var(--line)", "stroke-width": "1.2" }, f1);
+  if (thr <= aMax) el("circle", { cx: sc.x(thr), cy: sc.y(0), r: 4, fill: "var(--line)" }, f1);
+  sc.border();
+  el("rect", { id: "hov1", x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, fill: "transparent" }, f1);
+  S1 = { N, aMax, thr, dc, as, dgs, sc, m, W, H };
+  t1.innerHTML = `<tr><td>ordering cutoff of Chen and He, a/c = N</td><td>${N}</td></tr>
+    <tr><td>necessary and sufficient condition (Theorem 2), right elasticity at the kink = 1 at a/c</td><td>${fmt(thr, 4)}</td></tr>
+    <tr><td>deviation gain falls after the kink (Theorem 3), a/c = N(N+1)/(N−1)</td><td>${fmt(dc, 4)}</td></tr>`;
+  r1.innerHTML = "Move the pointer over the figure to read the jump at any <i>a</i>/<i>c</i>.";
+}
+f1.addEventListener("mousemove", ev => {
+  if (!S1) return;
+  const pt = f1.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+  const p = pt.matrixTransform(f1.getScreenCTM().inverse());
+  const a = 0.8 + (p.x - S1.m.l) / (S1.W - S1.m.l - S1.m.r) * (S1.aMax - 0.8);
+  if (a < 1.05 || a > S1.aMax) return;
+  const i = Math.round((a - 1.05) / 0.05);
+  const ks = ENGINE.kinkStats(ENGINE.linearGame(S1.as[i], S1.N));
+  const reg = ["continuous (Corollary 1)", "continuous (Theorem 2)", "one jump (Theorem 2)", "one jump (Theorem 3)"][ks.regime];
+  r1.innerHTML = `<b>a/c = ${fmt(S1.as[i], 2)}</b>: ${reg}; jump in worst punishment payoff <b>${fmt(S1.dgs[i], 4)}</b>` +
+    (ks.active ? `; d/c = ${fmt(ks.d, 3)}; right elasticity at the kink = ${fmt(ks.eps, 3)}` : "; the deviation at the kink is inactive");
+});
+
+// ---- Tool 2: curvature family --------------------------------------------------------
+const f2 = document.getElementById("fig2"), r2 = document.getElementById("read2");
+let S2 = null;
+function draw2() {
+  const N = +document.getElementById("n2").value, aMax = +document.getElementById("amax2").value, gMax = +document.getElementById("gmax2").value;
+  document.getElementById("n2v").textContent = N; document.getElementById("amax2v").textContent = aMax; document.getElementById("gmax2v").textContent = gMax;
+  const aMin = 1.1, gMin = 0.3, rows = 70;
+  const bnd = [];
+  for (let i = 0; i < rows; i++) bnd.push(ENGINE.curvBoundaries(gMin + (gMax - gMin) * i / (rows - 1), N, aMax));
+  const W = 760, H = 420, m = { l: 62, t: 28, r: 16, b: 46 };
+  const sc = frame(f2, W, H, m, [aMin, aMax], [gMin, gMax], "a/c", "Demand curvature γ",
+                   "Constant-curvature " + (N === 2 ? "duopoly" : "oligopoly, N = " + N));
+  const clampA = v => Math.min(Math.max(isNaN(v) ? aMax : v, aMin), aMax);
+  const poly = (left, right, fill) => {
+    const up = bnd.map(r => [clampA(left(r)), r.gam]), down = bnd.map(r => [clampA(right(r)), r.gam]).reverse();
+    const d = up.concat(down).map((p, i) => (i ? "L" : "M") + sc.x(p[0]).toFixed(2) + " " + sc.y(p[1]).toFixed(2)).join("") + "Z";
+    el("path", { d, fill, stroke: "none" }, f2);
+  };
+  poly(() => aMin, r => r.b_eps, "var(--fill-c)");
+  poly(r => r.b_eps, r => r.b_dc, "var(--fill-t2)");
+  poly(r => r.b_dc, () => aMax, "var(--fill-t3)");
+  // curves traversed in the direction of increasing a/c (decreasing gamma), so that the
+  // labels sit on the far side of each curve, as in the paper
+  const curve = (pts, id) => {
+    const inside = pts.filter(p => p[0] >= aMin && p[0] <= aMax).reverse();
+    if (inside.length < 2) return null;
+    const d = inside.map((p, i) => (i ? "L" : "M") + sc.x(p[0]).toFixed(2) + " " + sc.y(p[1]).toFixed(2)).join("");
+    el("path", { id, d, fill: "none", stroke: "var(--line)", "stroke-width": "1.6" }, f2);
+    // arc length in pixels at each vertex
+    const s = [0];
+    for (let i = 1; i < inside.length; i++) s.push(s[i - 1] + Math.hypot(sc.x(inside[i][0]) - sc.x(inside[i - 1][0]), sc.y(inside[i][1]) - sc.y(inside[i - 1][1])));
+    return { id, pts: inside, s };
+  };
+  const ordPts = [];
+  for (let i = 0; i < 300; i++) { const g = gMin + (gMax - gMin) * i / 299; ordPts.push([1 / (1 - Math.pow((N - 1) / N, g)), g]); }
+  const ord = curve(ordPts, "ord");
+  const nsc = curve(bnd.filter(r => !isNaN(r.b_eps)).map(r => [r.b_eps, r.gam]), "nsc");
+  // Labels along the curves (SVG textPath, glyph by glyph as in the paper). Glyphs beyond
+  // either end of a path are not drawn, so the start offset is clamped to keep the whole
+  // label on the path; the label width is estimated from the glyph count.
+  const LAB = 15, labW = txt => 0.5 * LAB * txt.length;
+  const label = (c, txt, start) => {
+    if (!c) return;
+    const total = c.s[c.s.length - 1], w = labW(txt);
+    const off = Math.max(0, Math.min(start(c), total - w));
+    const t = el("text", { "font-size": LAB, fill: "var(--fg)", dy: "-5" }, f2);
+    const tp = el("textPath", { href: "#" + c.id, startOffset: off.toFixed(1) }, t);
+    tp.textContent = txt;
+  };
+  // The curves run toward larger a/c (downward on the page), so the negative dy puts each
+  // label on the far side of its curve. Chen and He's label is centred on the stretch with
+  // gamma <= 1.5 (the lower, flatter end of the path); ours begins at a/c = 2, as in the paper.
+  label(ord, "sufficient condition of Chen and He", c => {
+    const k = Math.max(0, c.pts.findIndex(p => p[1] <= 1.5));
+    return (c.s[k] + c.s[c.s.length - 1]) / 2 - labW("sufficient condition of Chen and He") / 2; });
+  label(nsc, "necessary and sufficient condition", c => {
+    const k = c.pts.findIndex(p => p[0] >= 2); return k < 0 ? 0 : c.s[k]; });
+  sc.border();
+  el("rect", { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, fill: "transparent" }, f2);
+  S2 = { N, aMax, gMax, aMin, gMin, sc, m, W, H };
+  r2.innerHTML = "Move the pointer over the map to read the regime and the primitives at any (<i>a</i>/<i>c</i>, γ).";
+}
+f2.addEventListener("mousemove", ev => {
+  if (!S2) return;
+  const pt = f2.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+  const p = pt.matrixTransform(f2.getScreenCTM().inverse());
+  const a = S2.aMin + (p.x - S2.m.l) / (S2.W - S2.m.l - S2.m.r) * (S2.aMax - S2.aMin);
+  const g = S2.gMax - (p.y - S2.m.t) / (S2.H - S2.m.t - S2.m.b) * (S2.gMax - S2.gMin);
+  if (a < S2.aMin || a > S2.aMax || g < S2.gMin || g > S2.gMax) return;
+  const ks = ENGINE.kinkStats(ENGINE.curvGame(a, g, S2.N));
+  const reg = ["continuous (Corollary 1)", "continuous (Theorem 2)", "one jump (Theorem 2)", "one jump (Theorem 3)"][ks.regime];
+  const b = ENGINE.curvBoundaries(g, S2.N, S2.aMax);
+  r2.innerHTML = `<b>a/c = ${fmt(a, 2)}, γ = ${fmt(g, 2)}</b>: ${reg}` +
+    (ks.active ? `; d/c = ${fmt(ks.d, 3)}; right elasticity at the kink = ${fmt(ks.eps, 3)}` : "; the deviation at the kink is inactive") +
+    `. At this γ: ordering cutoff ${fmt(b.b_ord, 3)}, Theorem 2 threshold ${fmt(b.b_eps, 3)}, d = c at ${fmt(b.b_dc, 3)}.`;
+});
+
+// ---- wiring --------------------------------------------------------------------------
+const setv = (id, v) => { document.getElementById(id).value = v; };
+let t0h = null, t1h = null, t2h = null;
+for (const id of ["n0", "a0", "c0", "k0"]) document.getElementById(id).addEventListener("input", () => { clearTimeout(t0h); t0h = setTimeout(draw0, 30); });
+document.getElementById("reset0").addEventListener("click", () => { setv("n0", 5); setv("a0", 15); setv("c0", 3); setv("k0", 0.25); draw0(); });
+for (const id of ["n1", "amax1"]) document.getElementById(id).addEventListener("input", () => { clearTimeout(t1h); t1h = setTimeout(draw1, 30); });
+for (const id of ["n2", "amax2", "gmax2"]) document.getElementById(id).addEventListener("input", () => { clearTimeout(t2h); t2h = setTimeout(draw2, 30); });
+// reset buttons restore the settings of the paper's figures
+document.getElementById("reset1").addEventListener("click", () => { setv("n1", 2); setv("amax1", 9); draw1(); });
+document.getElementById("reset2").addEventListener("click", () => { setv("n2", 2); setv("amax2", 10); setv("gmax2", 3); draw2(); });
+draw0(); draw1(); draw2();
+</script>
+</body>
+</html>
